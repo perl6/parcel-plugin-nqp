@@ -1,0 +1,19 @@
+{
+  "name": "parcel-plugin-nqp",
+  "version": "0.0.1",
+  "description": "NQP support for Parcel bundler",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "Paweł Murias",
+    "email": "pawelmurias@gmail.com",
+    "url": "https://github.com/pmurias"
+  },
+  "license": "Artistic-2.0",
+  "dependencies": {
+    "nqp-browser-runtime": "0.0.3",
+    "parcel-bundler": "^1.9.7"
+  }
+}
