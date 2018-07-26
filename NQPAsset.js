@@ -8,9 +8,9 @@ module.exports = class NQPAsset extends Asset {
       this.addDependency(nqpRuntimePath + '/ModuleLoader.nqp-raw-runtime');
     }
 
-    constructor(name, pkg, options) {
+    constructor(name, options) {
       console.log("creating asset", name);
-      super(name, pkg, options);
+      super(name, options);
       this.type = 'js';
     }
     
