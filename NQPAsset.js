@@ -1,6 +1,7 @@
 const Asset = require('parcel-bundler/src/Asset');
 
 const nqpRuntimePath = 'nqp-browser-runtime';
+const nqpLibrary = require('nqp-js-on-js/nqp-library.js');
 
 module.exports = class NQPAsset extends Asset {
     async getDependencies() {
@@ -15,9 +16,7 @@ module.exports = class NQPAsset extends Asset {
     }
     
     async generate() {
-      const {spawnSync} = require('child_process');
-      const out = spawnSync('node', ['/home/pmurias/nqp/nqp-js-on-js/nqp-bootstrapped.js', '--target=js', this.name]);
-      let js = out.stdout.toString('utf8');
+      const js = nqpLibrary(this.name);
 
       // TODO - avoid mangling strings
       js = js.replace(/require\("nqp-runtime"\)/g, `require('${nqpRuntimePath}/runtime.nqp-raw-runtime')`);
