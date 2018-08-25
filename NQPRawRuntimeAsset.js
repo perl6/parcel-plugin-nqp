@@ -1,5 +1,4 @@
 const Asset = require('parcel-bundler/src/Asset');
-console.log('in nqp-raw-runtime');
 module.exports = class NQPRawRuntimeAsset extends Asset {
     constructor(name, pkg, options) {
       super(name, pkg, options);
@@ -20,6 +19,8 @@ module.exports = class NQPRawRuntimeAsset extends Asset {
       this.addDepsFromRegex(/require\('\.\/([0-9_A-Za-z-]+?\.nqp-raw-runtime)'\)/);
 
       this.addDepsFromRegex(/\/\* dependency \.\/([0-9_A-Za-z-]+?\.nqp-raw-runtime)\*\//);
+
+      this.addDependency('nqp-browser-runtime/perl6-runtime.nqp-raw-runtime');
 
       let deps = {
         "char-props": "0.1.5",
