@@ -2,6 +2,7 @@
 const Asset = require('parcel-bundler/src/Asset');
 const fs = require('fs');
 const nqpRuntimePath = 'nqp-browser-runtime';
+const rakudoLibrary = require('rakudo/rakudo-library.js');
 
 function insertAfter(whole, where, what) {
     return whole.replace(where, where + what);
@@ -18,9 +19,7 @@ module.exports = class Perl6Asset extends Asset {
     }
     
     async generate() {
-      const {spawnSync} = require('child_process');
-      const out = spawnSync('node', ['/home/pmurias/rakudo/rakudo.js', '--target=js', this.name]);
-      let js = out.stdout.toString('utf8');
+      let js = rakudoLibrary(this.name);
 
       js = js.replace(/require\("nqp-runtime"\)/g, `require('${nqpRuntimePath}/runtime.nqp-raw-runtime')`);
 
