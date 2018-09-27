@@ -16,6 +16,7 @@ module.exports = class NQPRawRuntimeAsset extends Asset {
     }
 
     async getDependencies() {
+      this.addDepsFromRegex(/require\('\.\/(.+?\.json)'\)/);
       this.addDepsFromRegex(/require\('\.\/([0-9_A-Za-z-]+?\.nqp-raw-runtime)'\)/);
 
       this.addDepsFromRegex(/\/\* dependency \.\/([0-9_A-Za-z-]+?\.nqp-raw-runtime)\*\//);
@@ -23,6 +24,7 @@ module.exports = class NQPRawRuntimeAsset extends Asset {
       this.addDependency('nqp-browser-runtime/perl6-runtime.nqp-raw-runtime');
 
       let deps = {
+        "bigint-is-prime": "^1.0.3",
         "char-props": "0.1.5",
         "escape-string-regexp": "^1.0.5",
         "fold-case": "^1.0.0",
