@@ -5,7 +5,7 @@ const nqpRuntimePath = 'nqp-browser-runtime';
 const rakudoLibrary = require('rakudo/rakudo-library.js');
 
 function insertAfter(whole, where, what) {
-    return whole.replace(where, where + what);
+    return whole.replace(where, (match, offset, string) => where + what);
 }
 
 module.exports = class Perl6Asset extends Asset {
