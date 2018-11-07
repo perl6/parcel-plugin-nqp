@@ -96,7 +96,7 @@ module.exports = class Perl6Asset extends Asset {
             skip++;
           }
           compUnitWithJS.splice(0, skip+1);
-          loadedJS.push('{' + this.fixRuntime(compUnitWithJS.join('\n')) + '}\n');
+          loadedJS.push('(function() {' + this.fixRuntime(compUnitWithJS.join('\n')) + '})();\n');
       }
 
       const prelude =
