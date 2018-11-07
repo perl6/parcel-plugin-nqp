@@ -36,11 +36,11 @@ module.exports = class Perl6Asset extends Asset {
       const options = {};
 
       if (config && config.lib) {
-        const libPath = path.isAbsolute(config.lib)
-          ? config.lib
-          : path.resolve(this.options.rootDir, config.lib);
+        const dirs = config.lib.map(dir => path.isAbsolute(dir)
+          ? dir
+          : path.resolve(this.options.rootDir, dir));
 
-        options.rakudoPrecompWith = 'filerecording#' + libPath;
+        options.rakudoPrecompWith = dirs.map(dir => 'filerecording#' + dir).join(',');
       }
 
       const compiled = rakudoLibrary(this.name, options);
