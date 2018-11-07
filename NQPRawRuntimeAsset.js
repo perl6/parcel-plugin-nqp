@@ -42,7 +42,9 @@ module.exports = class NQPRawRuntimeAsset extends Asset {
         "xregexp": "^3.2.0",
         "string_decoder": "^1.1.1",
         "buffer": "^0.11.10",
-        "process": "^0.11.10"
+        "process": "^0.11.10",
+        "tap-parser": "7.0.0",
+        "ansi-to-html": "0.6.6"
       };
 
       for (const dep in deps) {
