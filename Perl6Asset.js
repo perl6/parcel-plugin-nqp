@@ -105,6 +105,8 @@ module.exports = class Perl6Asset extends Asset {
         'nqp.extraRuntime("perl6", "nqp-browser-runtime/perl6-runtime.nqp-raw-runtime");\n' +
         '}\n';
 
+      js = 'require.main = module;\n' + js;
+
       return {js: prelude + 'function loadedDuringCompile($$outer) {\n ' + loadedJS.join('') + '\n}\n' + js};
     }
 
