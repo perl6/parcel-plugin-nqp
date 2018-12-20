@@ -29,7 +29,7 @@ module.exports = class Perl6Asset extends Asset {
     }
     
     async generate() {
-      console.log(process.pid, 'compiling', this.name, new Date());
+      // console.log(process.pid, 'compiling', this.name, new Date());
 
       const config = await this.getConfig(['.rakudorc']);
 
