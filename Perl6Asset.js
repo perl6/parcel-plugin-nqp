@@ -43,7 +43,14 @@ module.exports = class Perl6Asset extends Asset {
         options.rakudoPrecompWith = dirs.map(dir => 'filerecording#' + dir).join(',');
       }
 
-      const compiled = rakudoLibrary(this.name, options);
+      let compiled;
+      try {
+        compiled = rakudoLibrary.compile(this.name, options);
+      } catch (e) {
+        console.log('error', e);
+        throw e;
+      }
+
       let js = compiled.js;
 
       js = this.fixRuntime(js);
