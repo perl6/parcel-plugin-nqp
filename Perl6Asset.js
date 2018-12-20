@@ -59,10 +59,11 @@ module.exports = class Perl6Asset extends Asset {
 
       js = insertAfter(
           js,
-          'var ctxWithPath = new nqp.Ctx(null, null, null);',
-          '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"Perl6-World"));'
-              + '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"load-compiler"));'
-              + 'nqp.op.bindhllsym("perl6","@END_PHASERS",nqp.list(nqp.getHLL("nqp"),[]));'
+          'var ctxWithPath = new nqp.Ctx(null, null, null);\n',
+          '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"Perl6-World"));\n'
+              + 'nqp.op.bindhllsym("perl6","progname", new nqp.NQPStr(' + JSON.stringify(this.name) + '));\n'
+              + '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"load-compiler"));\n'
+              + 'nqp.op.bindhllsym("perl6","@END_PHASERS",nqp.list(nqp.getHLL("nqp"),[]));\n'
               + 'loadedDuringCompile(ctxWithPath);\n'
       );
 
