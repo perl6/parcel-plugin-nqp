@@ -24,7 +24,7 @@ module.exports = class NQPRawRuntimeAsset extends Asset {
       this.addDependency('nqp-browser-runtime/perl6-runtime.nqp-raw-runtime');
 
       let deps = {
-        "bigint-is-prime": "^1.0.3",
+        "jsbi-is-prime": "^1.0.0",
         "char-props": "0.1.5",
         "escape-string-regexp": "^1.0.5",
         "fold-case": "^1.0.0",
@@ -44,7 +44,8 @@ module.exports = class NQPRawRuntimeAsset extends Asset {
         "buffer": "^0.11.10",
         "process": "^0.11.10",
         "tap-parser": "7.0.0",
-        "ansi-to-html": "0.6.6"
+        "ansi-to-html": "0.6.6",
+        "jsbi": "^2.0.3",
       };
 
       for (const dep in deps) {

@@ -1,6 +1,6 @@
 {
   "name": "parcel-plugin-nqp",
-  "version": "0.20.0",
+  "version": "0.28.0",
   "description": "NQP support for Parcel bundler",
   "main": "index.js",
   "scripts": {
@@ -13,8 +13,8 @@
   },
   "license": "Artistic-2.0",
   "dependencies": {
-    "nqp-browser-runtime": "0.12.0",
-    "rakudo": "0.17.0",
-    "parcel-bundler": "^1.9.7"
+    "parcel-bundler": "^1.9.7",
+    "nqp-browser-runtime": "0.28.0",
+    "rakudo": "0.28.0"
   }
 }
