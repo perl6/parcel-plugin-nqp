@@ -64,7 +64,7 @@ module.exports = class Perl6Asset extends Asset {
               + 'nqp.op.bindhllsym("perl6","progname", new nqp.NQPStr(' + JSON.stringify(this.name) + '));\n'
               + '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"load-compiler"));\n'
               + 'nqp.op.bindhllsym("perl6","@END_PHASERS",nqp.list(nqp.getHLL("nqp"),[]));\n'
-              + 'loadedDuringCompile(ctxWithPath);\n'
+              + '/*await*/ loadedDuringCompile(nqp, ctxWithPath);\n'
       );
 
       const loadedJS = [];
@@ -104,7 +104,7 @@ module.exports = class Perl6Asset extends Asset {
             skip++;
           }
           compUnitWithJS.splice(0, skip+1);
-          loadedJS.push('(function() {' + this.fixRuntime(compUnitWithJS.join('\n')) + '})();\n');
+          loadedJS.push('/*await*/ nqp.loadCompileTimeDependency(function(module) {' + this.fixRuntime(compUnitWithJS.join('\n')) + '});\n');
       }
 
       const prelude =
@@ -115,7 +115,7 @@ module.exports = class Perl6Asset extends Asset {
 
       js = 'require.main = module;\n' + js;
 
-      return {js: prelude + 'function loadedDuringCompile($$outer) {\n ' + loadedJS.join('') + '\n}\n' + js};
+      return {js: prelude + '/*async*/ function loadedDuringCompile(nqp, $$outer) {\n ' + loadedJS.join('') + '\n}\n' + js};
     }
 
 };
