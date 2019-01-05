@@ -63,6 +63,7 @@ module.exports = class Perl6Asset extends Asset {
           '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"Perl6-World"));\n'
               + 'nqp.op.bindhllsym("perl6","progname", new nqp.NQPStr(' + JSON.stringify(this.name) + '));\n'
               + '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"load-compiler"));\n'
+              + 'nqp.afterRun = {hll: "perl6", sym: "&THE_END"};\n'
               + 'nqp.op.bindhllsym("perl6","@END_PHASERS",nqp.list(nqp.getHLL("nqp"),[]));\n'
               + '/*await*/ loadedDuringCompile(nqp, ctxWithPath);\n'
       );
