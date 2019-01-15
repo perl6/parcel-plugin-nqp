@@ -35,6 +35,8 @@ module.exports = class Perl6Asset extends Asset {
 
       const options = {};
 
+      options.sourceMap = this.options.sourceMaps;
+
       if (config && config.lib) {
         const dirs = config.lib.map(dir => path.isAbsolute(dir)
           ? dir
@@ -43,9 +45,12 @@ module.exports = class Perl6Asset extends Asset {
         options.rakudoPrecompWith = dirs.map(dir => 'filerecording#' + dir).join(',');
       }
 
+      let sourceMap;
+
       let compiled;
       try {
         compiled = rakudoLibrary.compile(this.name, options);
+        sourceMap = compiled.sourceMap;
       } catch (e) {
         console.log('error', e);
         throw e;
@@ -53,19 +58,25 @@ module.exports = class Perl6Asset extends Asset {
 
       let js = compiled.js;
 
+      if (sourceMap) {
+        sourceMap.sources = [this.relativeName];
+        sourceMap.sourcesContent = [this.contents];
+        js = js.substring(0, js.lastIndexOf('//# sourceMappingURL'));
+      }
+
       js = this.fixRuntime(js);
 
       /* HACKS */
 
       js = insertAfter(
           js,
-          'var ctxWithPath = new nqp.Ctx(null, null, null);\n',
-          '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"Perl6-World"));\n'
-              + 'nqp.op.bindhllsym("perl6","progname", new nqp.NQPStr(' + JSON.stringify(this.name) + '));\n'
-              + '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"load-compiler"));\n'
-              + 'nqp.afterRun = {hll: "perl6", sym: "&THE_END"};\n'
-              + 'nqp.op.bindhllsym("perl6","@END_PHASERS",nqp.list(nqp.getHLL("nqp"),[]));\n'
-              + '/*await*/ loadedDuringCompile(nqp, ctxWithPath);\n'
+          'var ctxWithPath = new nqp.Ctx(null, null, null);',
+          '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"Perl6-World"));'
+              + 'nqp.op.bindhllsym("perl6","progname", new nqp.NQPStr(' + JSON.stringify(this.name) + '));'
+              + '(/*await*/ nqp.op.loadbytecode(ctxWithPath,"load-compiler"));'
+              + 'nqp.afterRun = {hll: "perl6", sym: "&THE_END"};'
+              + 'nqp.op.bindhllsym("perl6","@END_PHASERS",nqp.list(nqp.getHLL("nqp"),[]));'
+              + '/*await*/ loadedDuringCompile(nqp, ctxWithPath);'
       );
 
       const loadedJS = [];
@@ -105,19 +116,20 @@ module.exports = class Perl6Asset extends Asset {
             skip++;
           }
           compUnitWithJS.splice(0, skip+1);
-          loadedJS.push('/*await*/ nqp.loadCompileTimeDependency(function(module) {' + this.fixRuntime(compUnitWithJS.join('\n')) + '});\n');
+          loadedJS.push('/*await*/ nqp.loadCompileTimeDependency(function(module) {' + this.fixRuntime(compUnitWithJS.join('\n')) + '});');
       }
 
       const prelude =
-        '{\n' +
-        'const nqp = ' + this.requireNqp() + ';\n' +
-        'nqp.extraRuntime("perl6", "nqp-browser-runtime/perl6-runtime.nqp-raw-runtime");\n' +
-        '}\n';
+        '{' +
+        'const nqp = ' + this.requireNqp() + ';' +
+        'nqp.extraRuntime("perl6", "nqp-browser-runtime/perl6-runtime.nqp-raw-runtime");' +
+        '};';
 
-      js = 'require.main = module;\n' + js;
+      js = 'require.main = module;' + js;
 
-      return {js: prelude + '/*async*/ function loadedDuringCompile(nqp, $$outer) {\n ' + loadedJS.join('') + '\n}\n' + js};
+      js = prelude + '/*async*/ function loadedDuringCompile(nqp, $$outer) {' + loadedJS.join('') + '};' + js
+
+      return {js: js, map: sourceMap};
     }
-
 };
 module.exports.type = 'nqp';
