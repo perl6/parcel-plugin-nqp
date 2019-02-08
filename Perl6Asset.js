@@ -1,12 +1,20 @@
 'use strict';
 const Asset = require('parcel-bundler/src/Asset');
+const SourceMap = require('parcel-bundler/src/SourceMap');
+const lineCounter = require('parcel-bundler/src/utils/lineCounter');
+
 const fs = require('fs');
 const path = require('path');
 const nqpRuntimePath = 'nqp-browser-runtime';
 const rakudoLibrary = require('rakudo/rakudo-library.js');
+const utils = require('./utils.js');
 
 function insertAfter(whole, where, what) {
     return whole.replace(where, (match, offset, string) => where + what);
+}
+
+function stripSourceMappingUrl(js) {
+  return js.substring(0, js.lastIndexOf('//# sourceMappingURL'));
 }
 
 module.exports = class Perl6Asset extends Asset {
@@ -29,7 +37,6 @@ module.exports = class Perl6Asset extends Asset {
     }
     
     async generate() {
-      // console.log(process.pid, 'compiling', this.name, new Date());
 
       const config = await this.getConfig(['.rakudorc']);
 
@@ -61,7 +68,8 @@ module.exports = class Perl6Asset extends Asset {
       if (sourceMap) {
         sourceMap.sources = [this.relativeName];
         sourceMap.sourcesContent = [this.contents];
-        js = js.substring(0, js.lastIndexOf('//# sourceMappingURL'));
+
+        js = stripSourceMappingUrl(js);
       }
 
       js = this.fixRuntime(js);
@@ -110,13 +118,23 @@ module.exports = class Perl6Asset extends Asset {
       }
 
       for (const path of paths) {
-          const compUnitWithJS = fs.readFileSync(path, 'utf8').split(/\n/);
+          const compUnitWithJS = stripSourceMappingUrl(fs.readFileSync(path, 'utf8')).split(/\n/);
           let skip = 0;
           while (compUnitWithJS[skip] != '' && skip < compUnitWithJS.length) {
             skip++;
           }
           compUnitWithJS.splice(0, skip+1);
-          loadedJS.push('/*await*/ nqp.loadCompileTimeDependency(function(module) {' + this.fixRuntime(compUnitWithJS.join('\n')) + '});');
+
+          const sourceMap = JSON.parse(fs.readFileSync(path + '.bc.map', 'utf8'));
+
+          for (let i = 0; i < sourceMap.sources.length; i++) {
+            sourceMap.sourcesContent[i] = fs.readFileSync(sourceMap.sources[i].replace(/ \([^()]*\)$/, ''), 'utf8');
+          }
+
+          loadedJS.push({
+            sourceMap: sourceMap,
+            js: '/*await*/ nqp.loadCompileTimeDependency(function(module) {' + this.fixRuntime(compUnitWithJS.join('\n')) + '});'
+          });
       }
 
       const prelude =
@@ -127,9 +145,32 @@ module.exports = class Perl6Asset extends Asset {
 
       js = 'require.main = module;' + js;
 
-      js = prelude + '/*async*/ function loadedDuringCompile(nqp, $$outer) {' + loadedJS.join('') + '};' + js
+      const combinedSourceMap = new SourceMap();
 
-      return {js: js, map: sourceMap};
+      let loadAllDeps = prelude + '/*async*/ function loadedDuringCompile(nqp, $$outer) {\n';
+
+      for (const dependency of loadedJS) {
+          combinedSourceMap.addMap(
+            dependency.sourceMap,
+            lineCounter(loadAllDeps) - 1
+          );
+          loadAllDeps = loadAllDeps + dependency.js;
+      }
+
+      loadAllDeps = loadAllDeps + '}\n';
+
+      combinedSourceMap.addMap(
+        sourceMap,
+        lineCounter(loadAllDeps) - 1
+      );
+
+      js = loadAllDeps + js;
+
+      if (config && config.async) {
+        js = utils.toAsynchronous(js);
+      }
+
+      return {js: js, map: combinedSourceMap};
     }
 };
 module.exports.type = 'nqp';
