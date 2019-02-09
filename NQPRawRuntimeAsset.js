@@ -46,6 +46,7 @@ module.exports = class NQPRawRuntimeAsset extends Asset {
         "tap-parser": "7.0.0",
         "ansi-to-html": "0.6.6",
         "jsbi": "^2.0.3",
+        "stacktrace-js": "???",
       };
 
       for (const dep in deps) {
