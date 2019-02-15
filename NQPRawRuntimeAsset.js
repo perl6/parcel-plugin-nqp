@@ -1,4 +1,7 @@
 const Asset = require('parcel-bundler/src/Asset');
+const fs = require('fs');
+const SourceMap = require('parcel-bundler/src/SourceMap');
+
 module.exports = class NQPRawRuntimeAsset extends Asset {
     constructor(name, pkg, options) {
       super(name, pkg, options);
@@ -56,8 +59,22 @@ module.exports = class NQPRawRuntimeAsset extends Asset {
     
     async generate() {
       await this.loadIfNeeded();
-      return {
-        'js': this.contents
+
+      const output = {
+        js: this.contents
       };
+
+      const path = this.name + '.map';
+
+      try {
+        output.map = JSON.parse(fs.readFileSync(path), 'utf8');
+      } catch (e) {
+        if (e.code === 'ENOENT') {
+        } else {
+          throw e;
+        }
+      }
+
+      return output;
     }
 };

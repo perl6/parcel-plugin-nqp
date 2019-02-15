@@ -7,7 +7,6 @@ const fs = require('fs');
 const path = require('path');
 const nqpRuntimePath = 'nqp-browser-runtime';
 const rakudoLibrary = require('rakudo/rakudo-library.js');
-const utils = require('./utils.js');
 
 function insertAfter(whole, where, what) {
     return whole.replace(where, (match, offset, string) => where + what);
@@ -127,6 +126,8 @@ module.exports = class Perl6Asset extends Asset {
 
           const sourceMap = JSON.parse(fs.readFileSync(path + '.bc.map', 'utf8'));
 
+          if (!sourceMap.sourcesContent) sourceMap.sourcesContent = [];
+
           for (let i = 0; i < sourceMap.sources.length; i++) {
             sourceMap.sourcesContent[i] = fs.readFileSync(sourceMap.sources[i].replace(/ \([^()]*\)$/, ''), 'utf8');
           }
@@ -165,10 +166,6 @@ module.exports = class Perl6Asset extends Asset {
       );
 
       js = loadAllDeps + js;
-
-      if (config && config.async) {
-        js = utils.toAsynchronous(js);
-      }
 
       return {js: js, map: combinedSourceMap};
     }
