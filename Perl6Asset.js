@@ -36,19 +36,37 @@ module.exports = class Perl6Asset extends Asset {
     }
     
     async generate() {
-
       const config = await this.getConfig(['.rakudorc']);
 
       const options = {};
 
       options.sourceMap = this.options.sourceMaps;
 
+      let libs = [];
+
       if (config && config.lib) {
         const dirs = config.lib.map(dir => path.isAbsolute(dir)
           ? dir
           : path.resolve(this.options.rootDir, dir));
+        libs = libs.concat(dirs, libs);
+      }
 
-        options.rakudoPrecompWith = dirs.map(dir => 'filerecording#' + dir).join(',');
+      if (config && config['use-lib-hack']) {
+        const base = path.dirname(path.dirname(this.name));
+
+        const regex = /### USE LIB \$\?FILE\.IO\.parent\(2\)\.(?:add|child)[(:]\s*["']([^"']+)/;
+
+        const matches = this.contents.match(new RegExp(regex, 'g'));
+
+        if (matches) {
+          for (const use of matches) {
+            libs.unshift(path.join(base, use.match(regex)[1]));
+          }
+        }
+      }
+
+      if (libs.length) {
+        options.rakudoPrecompWith = libs.map(dir => 'filerecording#' + dir).join(',');
       }
 
       let sourceMap;
